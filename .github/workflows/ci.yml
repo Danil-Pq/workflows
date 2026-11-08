@@ -7,11 +7,10 @@ on:
     branches: [ main ]
 
 jobs:
-  ci:
+  test:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
     steps:
       - name: Получить исходный код
         uses: actions/checkout@v4
@@ -27,5 +26,30 @@ jobs:
       - name: Запустить тесты
         run: npm test
 
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Получить исходный код
+        uses: actions/checkout@v4
+
+      - name: Установить Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Установить зависимости
+        run: npm install
+
       - name: Собрать приложение
         run: npm run build
+
+      - name: Сохранить артефакт
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-build
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error
